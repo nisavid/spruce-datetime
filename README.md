@@ -1,4 +1,0 @@
-datetime
-========
-
-Dates and times.
