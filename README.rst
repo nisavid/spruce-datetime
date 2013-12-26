@@ -1,6 +1,9 @@
+###############
+Spruce-datetime
+###############
 
-################
-nisavid-datetime
-################
+Spruce-datetime is a Python library for dates and times.  It is an
+extension of Python's datetime_ module.
 
-Dates and times.
+
+.. _datetime: http://docs.python.org/2/library/datetime.html
