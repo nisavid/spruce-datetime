@@ -13,22 +13,56 @@ import pytz as _tz
 from . import _tz as _tz_local
 
 
-def datetime_to_unixtime(datetime):
-    """Convert a :class:`datetime.datetime` to a Unix time.
+def datetime_from_localtime_structtime(struct_time):
+    """
+    Convert a local-time :class:`~time.struct_time` to a UTC
+    :class:`~datetime.datetime`.
 
-    If the *datetime* is time zone aware, then it is converted to UTC before
-    being converted to Unix time.  Otherwise it is converted directly to
-    Unix time, regardless of the value of :samp:`{datetime}.dst()`; in this
-    case, it is up to the caller to ensure that *datetime* is in UTC.
+    The input is assumed to be in local time.  The resulting
+    :class:`~datetime.datetime` is in UTC and is time zone aware.
 
-    :param dt:
-        A date and time.
-    :type dt: :class:`datetime.datetime`
+    :param struct_time:
+        A time struct.
+    :type struct_time: :class:`time.struct_time`
 
-    :rtype: :obj:`int`
+    :rtype: :class:`datetime.datetime`
 
     """
-    return _timegm(datetime.utctimetuple())
+    return datetime_from_unixtime(_mktime(struct_time))
+
+
+def datetime_from_structtime(struct_time):
+    """
+    Convert a UTC :class:`~time.struct_time` to a UTC
+    :class:`~datetime.datetime`.
+
+    The input is assumed to be in UTC.  The resulting
+    :class:`~datetime.datetime` is in UTC and is time zone aware.
+
+    :param struct_time:
+        A time struct.
+    :type struct_time: :class:`time.struct_time`
+
+    :rtype: :class:`datetime.datetime`
+
+    """
+    return naive_datetime_from_structtime(struct_time)\
+            .replace(tzinfo=_tz.UTC)
+
+
+def datetime_from_unixtime(unixtime):
+    """Convert a Unix time to a UTC :class:`~datetime.datetime`.
+
+    Unix time is defined in UTC.  The resulting :class:`~datetime.datetime`
+    is in UTC and is time zone aware.
+
+    :param int unixtime:
+        A time struct.
+
+    :rtype: :class:`datetime.datetime`
+
+    """
+    return _datetime.fromtimestamp(unixtime, _tz.UTC)
 
 
 def datetime_with_named_tz(dt, tzname):
@@ -73,25 +107,7 @@ def datetime_with_named_tz(dt, tzname):
     return dt_withtz
 
 
-def localtime_structtime_to_datetime(struct_time):
-    """
-    Convert a local-time :class:`~time.struct_time` to a UTC
-    :class:`~datetime.datetime`.
-
-    The input is assumed to be in local time.  The resulting
-    :class:`~datetime.datetime` is in UTC and is time zone aware.
-
-    :param struct_time:
-        A time struct.
-    :type struct_time: :class:`time.struct_time`
-
-    :rtype: :class:`datetime.datetime`
-
-    """
-    return unixtime_to_datetime(_mktime(struct_time))
-
-
-def localtime_structtime_to_localtime_datetime(struct_time):
+def localtime_datetime_from_localtime_structtime(struct_time):
     """
     Convert a local-time :class:`~time.struct_time` to a local-time
     :class:`~datetime.datetime`.
@@ -106,30 +122,26 @@ def localtime_structtime_to_localtime_datetime(struct_time):
     :rtype: :class:`datetime.datetime`
 
     """
-    return structtime_to_naive_datetime(struct_time)\
+    return naive_datetime_from_structtime(struct_time)\
             .replace(tzinfo=_tz_local.LOCALTIME)
 
 
-def structtime_to_datetime(struct_time):
-    """
-    Convert a UTC :class:`~time.struct_time` to a UTC
-    :class:`~datetime.datetime`.
+def localtime_datetime_from_unixtime(unixtime):
+    """Convert a Unix time to a local-time :class:`~datetime.datetime`.
 
-    The input is assumed to be in UTC.  The resulting
-    :class:`~datetime.datetime` is in UTC and is time zone aware.
+    Unix time is defined in UTC.  The resulting :class:`~datetime.datetime`
+    is in local time and is time zone aware.
 
-    :param struct_time:
+    :param int unixtime:
         A time struct.
-    :type struct_time: :class:`time.struct_time`
 
     :rtype: :class:`datetime.datetime`
 
     """
-    return structtime_to_naive_datetime(struct_time)\
-            .replace(tzinfo=_tz.UTC)
+    return _datetime.fromtimestamp(unixtime, _tz_local.LOCALTIME)
 
 
-def structtime_to_naive_datetime(struct_time):
+def naive_datetime_from_structtime(struct_time):
     """
     Convert a :class:`~time.struct_time` to a naive
     :class:`~datetime.datetime`.
@@ -150,31 +162,19 @@ def structtime_to_naive_datetime(struct_time):
                      minute=struct_time.tm_min, second=struct_time.tm_sec)
 
 
-def unixtime_to_datetime(unixtime):
-    """Convert a Unix time to a UTC :class:`~datetime.datetime`.
+def unixtime_from_datetime(datetime):
+    """Convert a :class:`datetime.datetime` to a Unix time.
 
-    Unix time is defined in UTC.  The resulting :class:`~datetime.datetime`
-    is in UTC and is time zone aware.
+    If the *datetime* is time zone aware, then it is converted to UTC before
+    being converted to Unix time.  Otherwise it is converted directly to
+    Unix time, regardless of the value of :samp:`{datetime}.dst()`; in this
+    case, it is up to the caller to ensure that *datetime* is in UTC.
 
-    :param int unixtime:
-        A time struct.
+    :param dt:
+        A date and time.
+    :type dt: :class:`datetime.datetime`
 
-    :rtype: :class:`datetime.datetime`
-
-    """
-    return _datetime.fromtimestamp(unixtime, _tz.UTC)
-
-
-def unixtime_to_localtime_datetime(unixtime):
-    """Convert a Unix time to a local-time :class:`~datetime.datetime`.
-
-    Unix time is defined in UTC.  The resulting :class:`~datetime.datetime`
-    is in local time and is time zone aware.
-
-    :param int unixtime:
-        A time struct.
-
-    :rtype: :class:`datetime.datetime`
+    :rtype: :obj:`int`
 
     """
-    return _datetime.fromtimestamp(unixtime, _tz_local.LOCALTIME)
+    return _timegm(datetime.utctimetuple())
