@@ -10,19 +10,23 @@ import re as _re
 import pytz as _tz
 
 
-RFC2822_MONTH_ABBRS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
+RFC5322_MONTH_ABBRS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
                        'Sep', 'Oct', 'Nov', 'Dec']
+"""
+The month name abbreviations specified by the :rfc:`Internet Message
+Format Date and Time Specification <5322#section-3.3>`
 
-RFC2822_MONTH_ABBRS_RE = _re.compile('|'.join(RFC2822_MONTH_ABBRS))
+"""
 
-RFC2822_OBSOLETE_MONTH_NAMES = ['January', 'February', 'March', 'April', 'May',
-                                'June', 'July', 'August', 'September',
-                                'October', 'November', 'December']
+RFC5322_MONTH_ABBRS_RE = _re.compile('|'.join(RFC5322_MONTH_ABBRS) + '$')
+"""
+A regular expression that matches any of the month name abbreviations
+specified by the :rfc:`Internet Message Format Date and Time
+Specification <5322#section-3.3>`
 
-RFC2822_OBSOLETE_MONTH_NAMES_RE = \
-    _re.compile('|'.join(RFC2822_OBSOLETE_MONTH_NAMES))
+"""
 
-RFC2822_OBSOLETE_TZ_HOURS_BY_NAME = {'UT': 0,
+RFC5322_OBSOLETE_TZ_HOURS_BY_NAME = {'UT': 0,
                                      'GMT': 0,
                                      'EDT': -4,
                                      'EST': -5,
@@ -33,125 +37,213 @@ RFC2822_OBSOLETE_TZ_HOURS_BY_NAME = {'UT': 0,
                                      'PDT': -7,
                                      'PST': -8,
                                      }
+"""
+The obsolete time zone names specified by :rfc:`Internet Message Format
+Obsolete Date and Time <5322#section-4.3>`
+
+"""
 for military_tz_name in (chr(ord_) for ord_ in _chain(range(65, 74),
                                                       range(75, 91),
                                                       range(97, 106),
                                                       range(107, 122))):
-    RFC2822_OBSOLETE_TZ_HOURS_BY_NAME[military_tz_name] = 0
+    RFC5322_OBSOLETE_TZ_HOURS_BY_NAME[military_tz_name] = 0
+del military_tz_name
 
-RFC2822_OBSOLETE_TZ_NAMES_RE = \
-    _re.compile('|'.join(RFC2822_OBSOLETE_TZ_HOURS_BY_NAME.keys()))
+RFC5322_OBSOLETE_TZ_NAMES_RE = \
+    _re.compile('|'.join(RFC5322_OBSOLETE_TZ_HOURS_BY_NAME.keys()) + '$')
+"""
+A regular expression that matches any of the obsolete time zone names
+specified by :rfc:`Internet Message Format Obsolete Date and Time \
+<5322#section-4.3>`
 
-RFC2822_OBSOLETE_WEEKDAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
+"""
+
+RFC5322_OBSOLETE_WEEKDAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
                                   'Friday', 'Saturday', 'Sunday']
+"""
+The obsolete weekday names specified by :rfc:`Internet Message Format
+Obsolete Date and Time <5322#section-4.3>`
 
-RFC2822_OBSOLETE_WEEKDAY_NAMES_RE = \
-    _re.compile('|'.join(RFC2822_OBSOLETE_WEEKDAY_NAMES))
+"""
 
-RFC2822_WEEKDAY_ABBRS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+RFC5322_OBSOLETE_WEEKDAY_NAMES_RE = \
+    _re.compile('|'.join(RFC5322_OBSOLETE_WEEKDAY_NAMES) + '$')
+"""
+A regular expression that matches any of the obsolete weekday names
+specified by :rfc:`Internet Message Format Obsolete Date and Time \
+<5322#section-4.3>`
 
-RFC2822_WEEKDAY_ABBRS_RE = _re.compile('|'.join(RFC2822_WEEKDAY_ABBRS))
+"""
+
+RFC5322_WEEKDAY_ABBRS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+"""
+The weekday abbreviations specified by the :rfc:`Internet Message Format
+Date and Time Specification <5322#section-3.3>`
+
+"""
+
+RFC5322_WEEKDAY_ABBRS_RE = _re.compile('|'.join(RFC5322_WEEKDAY_ABBRS) + '$')
+"""
+A regular expression that matches any of the weekday abbreviations
+specified by the :rfc:`Internet Message Format Date and Time
+Specification <5322#section-3.3>`
+
+"""
 
 
 CTIME_FORMAT_RE = \
     _re.compile(r'(?P<weekday_abbr>{}) (?P<month_abbr>{})'
-                    .format(RFC2822_WEEKDAY_ABBRS_RE.pattern,
-                            RFC2822_MONTH_ABBRS_RE.pattern)
-                + r' (?: ?(?P<day>((?<! )[1-3])?\d))'
-                  r' (?P<hour>[0-2]\d):(?P<minute>[0-5]\d):(?P<second>[0-5]\d)'
-                  r' (?P<year>\d\d\d\d)')
+                 .format(RFC5322_WEEKDAY_ABBRS_RE.pattern[:-1],
+                         RFC5322_MONTH_ABBRS_RE.pattern[:-1])
+                 + r' (?: ?(?P<day>((?<! )[1-3])?\d))'
+                    r' (?P<hour>[0-2]\d):(?P<minute>[0-5]\d)'
+                    r':(?P<second>[0-5]\d)'
+                    r' (?P<year>\d\d\d\d)$')
+"""
+A regular expression that matches a date-time string in the format
+defined by `asctime()`_
+
+.. _asctime():
+    http://pubs.opengroup.org/onlinepubs/009695399/functions/asctime.html
+
+"""
 
 
-RFC1123_FORMAT_RE = \
+RFC5322_FORMAT_RE = \
     _re.compile(r'(?:(?P<weekday_abbr>{})|(?P<obsolete_weekday_name>{})),'
-                    .format(RFC2822_WEEKDAY_ABBRS_RE.pattern,
-                            RFC2822_OBSOLETE_WEEKDAY_NAMES_RE.pattern)
-                + r' (?P<day>[0-3]\d)'
-                + r' (?:(?P<month_abbr>{})|(?P<obsolete_month_name>{}))'
-                      .format(RFC2822_MONTH_ABBRS_RE.pattern,
-                              RFC2822_OBSOLETE_MONTH_NAMES_RE.pattern)
-                + r' (?P<year>\d\d\d\d)'
-                + r' (?P<hour>[0-2]\d):(?P<minute>[0-5]\d):(?P<second>[0-5]\d)'
-                  r' (?P<tz>(?:(?P<tz_sign>[-+])(?P<tz_hours>\d\d)'
-                  r'(?P<tz_minutes>[0-5]\d))'
-                  r'|(?P<obsolete_tz_name>{}))'
-                      .format(RFC2822_OBSOLETE_TZ_NAMES_RE.pattern))
+                 .format(RFC5322_WEEKDAY_ABBRS_RE.pattern[:-1],
+                         RFC5322_OBSOLETE_WEEKDAY_NAMES_RE.pattern[:-1])
+                 + r' (?P<day>[0-3]\d) (?P<month_abbr>{}) (?P<year>\d\d\d\d)'
+                    .format(RFC5322_MONTH_ABBRS_RE.pattern[:-1])
+                 + r' (?P<hour>[0-2]\d):(?P<minute>[0-5]\d)'
+                    r':(?P<second>[0-5]\d)'
+                    r' (?P<tz>(?:(?P<tz_sign>[-+])(?P<tz_hours>\d\d)'
+                    r'(?P<tz_minutes>[0-5]\d))'
+                    r'|(?P<obsolete_tz_name>{}))$'
+                    .format(RFC5322_OBSOLETE_TZ_NAMES_RE.pattern[:-1]))
+"""
+A regular expression that matches a date-time string in the format
+defined by the :rfc:`Internet Message Format Date and Time
+Specification <5322#section-3.3>`
+
+"""
 
 
 HTTP11_RFC1123_FORMAT_RE = \
     _re.compile(r'(?P<weekday_abbr>{}), (?P<day>[0-3]\d)'
-                    .format(RFC2822_WEEKDAY_ABBRS_RE.pattern)
-                + r' (?P<month_abbr>{}) (?P<year>\d\d\d\d)'
-                      .format(RFC2822_MONTH_ABBRS_RE.pattern)
-                + r' (?P<hour>[0-2]\d):(?P<minute>[0-5]\d):(?P<second>[0-5]\d)'
-                  r' GMT')
+                 .format(RFC5322_WEEKDAY_ABBRS_RE.pattern[:-1])
+                 + r' (?P<month_abbr>{}) (?P<year>\d\d\d\d)'
+                    .format(RFC5322_MONTH_ABBRS_RE.pattern[:-1])
+                 + r' (?P<hour>[0-2]\d):(?P<minute>[0-5]\d)'
+                    r':(?P<second>[0-5]\d)'
+                    r' GMT$')
+"""
+A regular expression that matches a date-time string in the format based
+on RFC 1123 that is defined by :rfc:`HTTP/1.1 Full Date \
+<2616#section-3.3.1>`
+
+"""
 
 
 HTTP11_RFC850_FORMAT_RE = \
     _re.compile(r'(?P<obsolete_weekday_name>{}),'
-                    .format(RFC2822_WEEKDAY_ABBRS_RE.pattern,
-                            RFC2822_OBSOLETE_WEEKDAY_NAMES_RE.pattern)
-                + r' (?P<day>[0-3]\d)-(?P<obsolete_month_name>{})'
-                      .format(RFC2822_OBSOLETE_MONTH_NAMES_RE.pattern)
-                + r' (?P<year>\d\d\d\d)'
-                + r' (?P<hour>[0-2]\d):(?P<minute>[0-5]\d):(?P<second>[0-5]\d)'
-                  r' GMT')
+                 r' (?P<day>[0-3]\d)-(?P<month_abbr>{})-(?P<year_2digit>\d\d)'
+                 .format(RFC5322_OBSOLETE_WEEKDAY_NAMES_RE.pattern[:-1],
+                         RFC5322_MONTH_ABBRS_RE.pattern[:-1])
+                 + r' (?P<hour>[0-2]\d):(?P<minute>[0-5]\d)'
+                    r':(?P<second>[0-5]\d)'
+                    r' GMT$')
+"""
+A regular expression that matches a date-time string in the format based
+on RFC 850 that is defined by :rfc:`HTTP/1.1 Full Date \
+<2616#section-3.3.1>`
+
+"""
 
 
-HTTP11_FORMAT_RE = '|'.join(r'(?:{})'.format(format_re.pattern)
-                            for format_re
-                            in (HTTP11_RFC1123_FORMAT_RE,
-                                HTTP11_RFC850_FORMAT_RE, CTIME_FORMAT_RE))
+HTTP11_FORMAT_RE = \
+    _re.compile('|'.join(r'(?:{})'.format(pattern)
+                         for pattern
+                         in (HTTP11_RFC1123_FORMAT_RE
+                              .pattern[:-1]
+                              .replace('(?P<', '(?P<rfc1123_'),
+                             HTTP11_RFC850_FORMAT_RE
+                              .pattern[:-1]
+                              .replace('(?P<', '(?P<rfc850_'),
+                             CTIME_FORMAT_RE
+                              .pattern[:-1]
+                              .replace('(?P<', '(?P<ctime_'),
+                             ))
+                 + '$')
+"""
+A regular expression that matches a date-time string in any of the
+formats defined by :rfc:`HTTP/1.1 Full Date <2616#section-3.3.1>`
+
+"""
 
 
-def datetime_httpstr(datetime):
-    return datetime.astimezone(_tz.UTC).strftime('%a, %d %b %Y %H:%M:%S GMT')
+def datetime_httpstr(dt):
+    """Convert a date-time object to an HTTP date-time string
+
+    .. seealso:: :rfc:`HTTP/1.1 Full Date <2616#section-3.3.1>`
+
+    :param dt:
+        A date-time object.
+    :type dt: :class:`datetime.datetime`
+
+    :rtype: :obj:`str`
+
+    """
+    return dt.astimezone(_tz.UTC).strftime('%a, %d %b %Y %H:%M:%S GMT')
 
 
-def datetime_fromhttpstr(str):
+def datetime_from_httpstr(string):
 
-    match = HTTP11_FORMAT_RE.match(str)
+    """Convert an HTTP date-time string to a date-time object
+
+    .. seealso:: :rfc:`HTTP/1.1 Full Date <2616#section-3.3.1>`
+
+    :param str string:
+        An HTTP date-time string.
+
+    :rtype: :class:`datetime.datetime`
+
+    """
+
+    match = HTTP11_FORMAT_RE.match(string)
 
     if not match:
-        raise ValueError('invalid HTTP date-and-time string {!r}; expected a'
+        raise ValueError('invalid HTTP date-time string {!r}; expecting a'
                           ' string in one of the formats specified in RFC 2616'
                           ' section 3.3.1'
-                          .format(str))
+                          .format(string))
 
-    year = match.group('year')
-    day = match.group('day')
-    hour = match.group('hour')
-    minute = match.group('minute')
-    second = match.group('second')
-
-    month_abbr = match.group('month_abbr')
-    obsolete_month_name = match.group('obsolete_month_name')
-    if month_abbr:
-        month = 1 + RFC2822_MONTH_ABBRS.index(month_abbr)
-    elif obsolete_month_name:
-        month = 1 + RFC2822_OBSOLETE_MONTH_NAMES.index(obsolete_month_name)
+    year_str = match.group('rfc1123_year')
+    if year_str:
+        year = int(year_str)
     else:
-        assert False
-
-    if match.group('tz'):
-        tz_sign = match.group('tz_sign')
-        if tz_sign:
-            try:
-                tz_hours = int(tz_sign + match.group('tz_hours'))
-                tz_minutes = int(tz_sign
-                                 + (match.group('tz_minutes') or '0'))
-            except (TypeError, ValueError):
-                # FIXME
-                raise ValueError()
-            tz_minutes += tz_hours * 60
-
-            tzinfo = _tz.FixedOffset(tz_minutes)
-
+        year_str = match.group('rfc850_year_2digit')
+        if year_str:
+            # CAVEAT: guess the year meant by a two-digit year, as specified by
+            #   :rfc:`HTTP/1.1 Tolerant Applications <2616#section-19.3>`
+            year = 2000 + int(year_str)
+            if year > _datetime.now().year + 50:
+                year -= 100
         else:
-            obsolete_tz_name = match.group('obsolete_tz_name')
-            tz_hours = RFC2822_OBSOLETE_TZ_HOURS_BY_NAME[obsolete_tz_name]
-            tzinfo = _tz.FixedOffset(tz_hours * 60)
-    else:
-        tzinfo = _tz.UTC
+            year = int(match.group('ctime_year'))
 
-    return _datetime(year, month, day, hour, minute, second, tzinfo=tzinfo)
+    month_abbr = _http11_format_re_match_pseudogroup(match, 'month_abbr')
+    month = 1 + RFC5322_MONTH_ABBRS.index(month_abbr)
+
+    day = int(_http11_format_re_match_pseudogroup(match, 'day'))
+    hour = int(_http11_format_re_match_pseudogroup(match, 'hour'))
+    minute = int(_http11_format_re_match_pseudogroup(match, 'minute'))
+    second = int(_http11_format_re_match_pseudogroup(match, 'second'))
+
+    return _datetime(year, month, day, hour, minute, second, tzinfo=_tz.UTC)
+
+
+def _http11_format_re_match_pseudogroup(match, name):
+    return match.group('rfc1123_{}'.format(name)) \
+           or match.group('rfc850_{}'.format(name)) \
+           or match.group('ctime_{}'.format(name))
