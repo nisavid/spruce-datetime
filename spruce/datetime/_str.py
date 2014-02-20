@@ -220,6 +220,191 @@ def datetime_httpstr(dt):
     return dt.astimezone(_tz.UTC).strftime('%a, %d %b %Y %H:%M:%S GMT')
 
 
+def datetime_from_re_match(string,
+                           re,
+                           re_flags=0,
+                           year_group='year',
+                           month_group='month',
+                           day_group='day',
+                           hour_group='hour',
+                           minute_group='minute',
+                           second_group='second',
+                           microsecond_group='microsecond',
+                           tz_sign_group='tz_sign',
+                           tz_hours_group='tz_hours',
+                           tz_minutes_group='tz_minutes',
+                           default_tz=None):
+
+    """
+    Parse a date-time from a date-time string according to a regular
+    expression
+
+    The given *string* is parsed with the given regular expression *re*,
+    extracted to date-time parts using the corresponding named match groups,
+    and converted to a :class:`~datetime.datetime`.  These rules apply:
+
+      * The date-time parts are extracted as named :obj:`match groups
+        <re.MatchObject.group>`, using the names specified by the
+        corresponding *\*_group* arguments.
+
+      * A match is required, but none of the expected parts is required to
+        be matched.  If desired, such requirements can be expressed in the
+        *re* by making it match only if all desired parts are present.
+
+      * If the year part is omitted, it defaults to :code:`'1970'`.
+
+      * If either of the month or day parts is omitted, it defaults to
+        :code:`'1'`.
+
+      * If any time part (hour, minute, second, microsecond) is omitted, it
+        defaults to :code:`'0'`.
+
+      * If a time zone is specified:
+
+        * It must contain at least a sign part and an hours part.
+
+        * The sign part must be a positive sign (:code:`'+'` or :code:`''`)
+          or a negative sign (:code:`'-'`).
+
+        * The minutes part, if omitted, defaults to :code:`'0'`.
+
+        * The resulting :class:`~datetime.datetime` is time-zone-aware.
+
+        * The resulting time zone is a fixed offset of minutes equal to
+          the result of evaluating the arithmetic expression
+          :samp:`{tz_sign}({tz_hours} * 60 + {tz_minutes})` after
+          substituting the corresponding time zone parts.
+
+      * If a time zone is omitted, it defaults to *default_tz*.  If this is
+        null, then the resulting :class:`~datetime.datetime` is
+        time-zone-naive.
+
+    :param str string:
+        A date-time string.
+
+    :param re:
+        A regular expression.
+    :type re: ~\ :func:`re.compile`
+
+    :param int re_flags:
+        Regular expression flags passed to :func:`re.compile`.
+
+    :param str year_group:
+        The name of the *re* match group that captures the year.
+
+    :param str month_group:
+        The name of the *re* match group that captures the month.
+
+    :param str day_group:
+        The name of the *re* match group that captures the day.
+
+    :param str hour_group:
+        The name of the *re* match group that captures the hour.
+
+    :param str minute_group:
+        The name of the *re* match group that captures the minute.
+
+    :param str second_group:
+        The name of the *re* match group that captures the second.
+
+    :param str microsecond_group:
+        The name of the *re* match group that captures the microsecond.
+
+    :param str tz_sign:
+        The name of the *re* match group that captures the time zone offset
+        sign.
+
+    :param str tz_hours:
+        The name of the *re* match group that captures the time zone offset
+        hours.
+
+    :param str tz_minutes:
+        The name of the *re* match group that captures the time zone offset
+        minutes.
+
+    :param default_tz:
+        The default time zone.
+    :type default_tz: :class:`datetime.tzinfo` or null
+
+    :rtype: :class:`datetime.datetime`
+
+    """
+
+    re = _re.compile(re, re_flags)
+
+    match = re.match(string)
+    if match:
+        dt_args = []
+
+        for name, default in ((year_group, 1970),
+                              (month_group, 1),
+                              (day_group, 1),
+                              (hour_group, 0),
+                              (minute_group, 0),
+                              (second_group, 0),
+                              (microsecond_group, 0),
+                              ):
+            value_str = match.group(name)
+            if value_str is not None:
+                try:
+                    value = int(value_str)
+                except (TypeError, ValueError):
+                    raise ValueError('invalid date-time regex {!r}: group {!r}'
+                                      ' matched non-integer string {!r}'
+                                      .format(re.pattern, name, value_str))
+            else:
+                value = default
+            dt_args.append(value)
+
+        tz_sign_str = match.group(tz_sign_group)
+        if tz_sign_str is not None:
+            if tz_sign_str in ('+', ''):
+                tz_sign = 1
+            elif tz_sign_str == '-':
+                tz_sign = -1
+            else:
+                raise ValueError('invalid date-time regex {!r}: group {!r}'
+                                  ' matched non-sign string {!r}'
+                                  .format(re.pattern, tz_sign_group,
+                                          tz_sign_str))
+
+            tz_hours_str = match.group(tz_hours_group)
+            try:
+                tz_hours = int(tz_hours_str)
+            except (TypeError, ValueError):
+                raise ValueError('invalid date-time regex {!r}: group {!r}'
+                                  ' matched non-integer string {!r}'
+                                  .format(re.pattern, tz_hours_group,
+                                          tz_hours_str))
+
+            tz_minutes_str = match.group(tz_minutes_group)
+            if tz_minutes_str is not None:
+                try:
+                    tz_minutes = int(tz_minutes_str)
+                except (TypeError, ValueError):
+                    raise ValueError('invalid date-time regex {!r}: group {!r}'
+                                      ' matched non-integer string {!r}'
+                                      .format(re.pattern, tz_minutes_group,
+                                              tz_minutes_str))
+            else:
+                tz_minutes = 0
+
+            tz_minutes += tz_hours * 60
+            tz_minutes *= tz_sign
+            tz = _tz.FixedOffset(tz_minutes)
+
+        else:
+            tz = default_tz
+        dt_args.append(tz)
+
+        return _datetime(*dt_args)
+
+    else:
+        raise ValueError('invalid date-time string {!r}; expecting a string'
+                          ' that matches regex {!r}'
+                          .format(string, re.pattern))
+
+
 def datetime_from_httpstr(string):
 
     """Convert an HTTP date-time string to a date-time object
