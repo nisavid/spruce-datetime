@@ -15,7 +15,7 @@ NAME_NOPREFIX = 'datetime'
 
 NAME = 'Spruce-' + NAME_NOPREFIX
 
-VERSION = '0.1.3'
+VERSION = '0.2.0'
 
 SITE_URI = ''
 
