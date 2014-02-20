@@ -1,4 +1,4 @@
-"""Time zones.
+"""Time zones
 
 See :mod:`pytz` from :pypi:`pytz` for :class:`~datetime.tzinfo` objects
 for other time zones.
@@ -11,19 +11,25 @@ __docformat__ = "restructuredtext"
 from datetime import timedelta as _timedelta, tzinfo as _tzinfo
 import time as _localtime
 from time \
-    import mktime as _timestruct_to_unixtime, \
-           localtime as _unixtime_to_localtimestruct, \
+    import mktime as _unixtime_from_localtime_timestruct, \
+           localtime as _localtime_timestruct_from_unixtime, \
            tzset as _tzset
 
 
 _TIMEDELTA_ZERO = _timedelta(0)
+
+_TIMEDELTA_DST = _TIMEDELTA_ZERO
+
+_TIMEDELTA_DSTSTD = _TIMEDELTA_ZERO
+
+_TIMEDELTA_STD = _TIMEDELTA_ZERO
 
 
 def tzset():
 
     """
     Reset the local time conversion rules per environment variable
-    :envvar:`TZ`.
+    :envvar:`TZ`
 
     .. seealso:: :func:`time.tzset`
 
@@ -44,32 +50,34 @@ tzset()
 
 class _LocalTime(_tzinfo):
 
-    def utcoffset(self, datetime):
-        if self._isdst(datetime):
+    def utcoffset(self, dt):
+        if self._isdst(dt):
             return _TIMEDELTA_DST
         else:
             return _TIMEDELTA_STD
 
-    def dst(self, datetime):
-        if self._isdst(datetime):
+    def dst(self, dt):
+        if self._isdst(dt):
             return _TIMEDELTA_DSTSTD
         else:
             return _TIMEDELTA_ZERO
 
-    def tzname(self, datetime):
-        return _localtime.tzname[self._isdst(datetime)]
+    def tzname(self, dt):
+        return _localtime.tzname[self._isdst(dt)]
 
-    def _isdst(self, datetime):
-        timetuple = (datetime.year, datetime.month, datetime.day,
-                     datetime.hour, datetime.minute, datetime.second,
-                     datetime.weekday(), 0, 0)
-        unixtime = _timestruct_to_unixtime(timetuple)
-        timetuple = _unixtime_to_localtimestruct(unixtime)
-        return timetuple.tm_isdst > 0
+    def _isdst(self, dt):
+        timestruct = (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second,
+                      dt.weekday(), 0, 0)
+        unixtime = _unixtime_from_localtime_timestruct(timestruct)
+        timestruct = _localtime_timestruct_from_unixtime(unixtime)
+        return timestruct.tm_isdst > 0
+
 LOCALTIME = _LocalTime()
-"""A :class:`datetime.tzinfo` that represents local time.
+"""The local time zone
 
 Adapted from the example `tzinfo objects
 <http://docs.python.org/library/datetime.html#tzinfo-objects>`_.
+
+:type: :class:`datetime.tzinfo`
 
 """

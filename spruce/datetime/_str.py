@@ -1,4 +1,4 @@
-"""String formats and representations."""
+"""String formats and representations"""
 
 __copyright__ = "Copyright (C) 2014 Ivan D Vasin"
 __docformat__ = "restructuredtext"
@@ -16,6 +16,8 @@ RFC5322_MONTH_ABBRS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
 The month name abbreviations specified by the :rfc:`Internet Message
 Format Date and Time Specification <5322#section-3.3>`
 
+:type: [:obj:`str`]
+
 """
 
 RFC5322_MONTH_ABBRS_RE = _re.compile('|'.join(RFC5322_MONTH_ABBRS) + '$')
@@ -23,6 +25,8 @@ RFC5322_MONTH_ABBRS_RE = _re.compile('|'.join(RFC5322_MONTH_ABBRS) + '$')
 A regular expression that matches any of the month name abbreviations
 specified by the :rfc:`Internet Message Format Date and Time
 Specification <5322#section-3.3>`
+
+:type: :class:`re.RegexObject`
 
 """
 
@@ -38,8 +42,11 @@ RFC5322_OBSOLETE_TZ_HOURS_BY_NAME = {'UT': 0,
                                      'PST': -8,
                                      }
 """
-The obsolete time zone names specified by :rfc:`Internet Message Format
-Obsolete Date and Time <5322#section-4.3>`
+A mapping of names to offset hours for the obsolete time zone names
+specified by :rfc:`Internet Message Format Obsolete Date and Time \
+<5322#section-4.3>`
+
+:type: {:obj:`str`: :obj:`int`}
 
 """
 for military_tz_name in (chr(ord_) for ord_ in _chain(range(65, 74),
@@ -55,6 +62,8 @@ RFC5322_OBSOLETE_TZ_NAMES_RE = \
 A regular expression that matches any of the obsolete time zone names
 specified by :rfc:`Internet Message Format Obsolete Date and Time \
 <5322#section-4.3>`
+
+:type: :class:`re.RegexObject`
 
 """
 
@@ -73,6 +82,8 @@ A regular expression that matches any of the obsolete weekday names
 specified by :rfc:`Internet Message Format Obsolete Date and Time \
 <5322#section-4.3>`
 
+:type: :class:`re.RegexObject`
+
 """
 
 RFC5322_WEEKDAY_ABBRS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -87,6 +98,8 @@ RFC5322_WEEKDAY_ABBRS_RE = _re.compile('|'.join(RFC5322_WEEKDAY_ABBRS) + '$')
 A regular expression that matches any of the weekday abbreviations
 specified by the :rfc:`Internet Message Format Date and Time
 Specification <5322#section-3.3>`
+
+:type: :class:`re.RegexObject`
 
 """
 
@@ -105,6 +118,8 @@ defined by `asctime()`_
 
 .. _asctime():
     http://pubs.opengroup.org/onlinepubs/009695399/functions/asctime.html
+
+:type: :class:`re.RegexObject`
 
 """
 
@@ -126,6 +141,8 @@ A regular expression that matches a date-time string in the format
 defined by the :rfc:`Internet Message Format Date and Time
 Specification <5322#section-3.3>`
 
+:type: :class:`re.RegexObject`
+
 """
 
 
@@ -142,6 +159,8 @@ A regular expression that matches a date-time string in the format based
 on RFC 1123 that is defined by :rfc:`HTTP/1.1 Full Date \
 <2616#section-3.3.1>`
 
+:type: :class:`re.RegexObject`
+
 """
 
 
@@ -157,6 +176,8 @@ HTTP11_RFC850_FORMAT_RE = \
 A regular expression that matches a date-time string in the format based
 on RFC 850 that is defined by :rfc:`HTTP/1.1 Full Date \
 <2616#section-3.3.1>`
+
+:type: :class:`re.RegexObject`
 
 """
 
@@ -179,16 +200,18 @@ HTTP11_FORMAT_RE = \
 A regular expression that matches a date-time string in any of the
 formats defined by :rfc:`HTTP/1.1 Full Date <2616#section-3.3.1>`
 
+:type: :class:`re.RegexObject`
+
 """
 
 
 def datetime_httpstr(dt):
-    """Convert a date-time object to an HTTP date-time string
+    """The HTTP date-time string representation of a date-time
 
     .. seealso:: :rfc:`HTTP/1.1 Full Date <2616#section-3.3.1>`
 
     :param dt:
-        A date-time object.
+        A date-time.
     :type dt: :class:`datetime.datetime`
 
     :rtype: :obj:`str`
