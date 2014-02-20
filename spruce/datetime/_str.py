@@ -205,6 +205,27 @@ formats defined by :rfc:`HTTP/1.1 Full Date <2616#section-3.3.1>`
 """
 
 
+ISO_LIKE_FORMAT_RE = \
+    _re.compile(r'(?P<year>\d{4})'
+                 r'(?:[^0-9A-Za-z](?P<month>\d{2})'
+                 r'(?:[^0-9A-Za-z](?P<day>\d{2}))?)?'
+                 r'(?:(?:T|[^0-9A-Za-z])(?P<hour>\d{2})'
+                 r'(?:[^0-9A-Za-z](?P<minute>\d{2})'
+                 r'(?:[^0-9A-Za-z](?P<second>\d{2})'
+                 r'(?:[^0-9A-Za-z](?P<microsecond>\d{1,6}))?)?)?)?'
+                 r'(?:[^0-9A-Za-z]?'
+                 r'(?P<tz_sign>(?:(?<=[^0-9A-Za-z])[+-]?)|[+-])'
+                 r'(?P<tz_hours>\d{1,2})'
+                 r'(?:[^0-9A-Za-z]?(?P<tz_minutes>\d{2}))?)?$')
+"""
+A regular expression that matches a date-time string in a format that
+looks roughly like ISO 8601 dates and date-times
+
+:type: :class:`re.RegexObject`
+
+"""
+
+
 def datetime_httpstr(dt):
     """The HTTP date-time string representation of a date-time
 
