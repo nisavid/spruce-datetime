@@ -10,6 +10,16 @@ import re as _re
 import pytz as _tz
 
 
+ISO8601_DURATION_RE = _re.compile(r'(?P<sign_neg>-)?'
+                                   r'(?:(?P<years>\d+)Y)?'
+                                   r'(?:(?P<months>\d+)M)?'
+                                   r'(?:(?P<days>\d+)D)?'
+                                   r'(?:T(?:(?P<hours>\d+)H)?'
+                                   r'(?:(?P<minutes>\d+)M)?'
+                                   r'(?:(?P<seconds>\d+)'
+                                   r'(?P<frac_seconds>\.\d+)?S)?)?$')
+
+
 RFC5322_MONTH_ABBRS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
                        'Sep', 'Oct', 'Nov', 'Dec']
 """
