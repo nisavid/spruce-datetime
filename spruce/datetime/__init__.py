@@ -1,4 +1,4 @@
-"""Dates and times.
+"""Dates and times
 
 This is an extension of :mod:`datetime`.
 
